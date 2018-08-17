@@ -25,6 +25,46 @@ app.get("/api/hello", function (req, res) {
 });
 
 
+// Timestamp Microservice
+app.get("/api/timestamp/:date_string?", function(req, res) {
+  var unixTimeRegex = /^\d{10}$|^\d{13}$/;
+  var iso8601Regex = /^\d{4}-\d\d-\d\d$/;
+  
+  var rawString = req.params.date_string;
+  var outDate = undefined;
+  var resBody = {};
+
+  
+  console.log("Input date: ", rawString);
+  if ( rawString === undefined ) {
+    
+    console.log("No date in request, respond with current system time.");
+    var outDate = new Date();
+    
+  } else if ( unixTimeRegex.test(rawString) ) {
+    
+    console.log("Input date is in Unix timestamp fromat: ", rawString);
+    var outDate = new Date( parseInt(rawString) );
+    
+  } else if ( iso8601Regex.test(rawString) ) {
+    
+    console.log("Input date is in UTC ISO-8601 fromat: ", rawString);
+    var outDate = new Date( rawString );
+
+  } else {
+    console.log("Invalid fromat: ", rawString);
+    resBody.error = "Invalid Date";
+    res.json(resBody);
+  }
+  
+  resBody.unix = outDate.getTime();
+  resBody.utc = outDate.toUTCString();
+  
+  console.log( "Response body: ", resBody );
+  res.json(resBody);
+
+  
+});
 
 // listen for requests :)
 var listener = app.listen(process.env.PORT, function () {
